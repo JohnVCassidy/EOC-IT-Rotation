@@ -137,28 +137,28 @@ import {
   onSnapshot 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ✅ Your Firebase config (already correct)
+// ✅ YOUR Firebase config (inserted correctly)
 const firebaseConfig = {
-  apiKey: "AIzaSyAhEeegT4M7NIqfPriX4aXtVGWYRtRk80g",
-  authDomain: "eoc-it-rotation-4c320.firebaseapp.com",
-  projectId: "eoc-it-rotation-4c320",
-  storageBucket: "eoc-it-rotation-4c320.firebasestorage.app",
-  messagingSenderId: "1098588557484",
-  appId: "1:1098588557484:web:d31d60eceb0dd1fd4e4f09"
+  apiKey: "AIzaSyD6tgWMss4PKCWmZYQfytrvtuOtuWKq-ww",
+  authDomain: "task-rotation-live.firebaseapp.com",
+  projectId: "task-rotation-live",
+  storageBucket: "task-rotation-live.firebasestorage.app",
+  messagingSenderId: "1000232444916",
+  appId: "1:1000232444916:web:616cf90d8d833908848fa1"
 };
 
 // ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ Shared document (THIS MAKES IT GLOBAL)
+// ✅ Shared document (your "database row")
 const docRef = doc(db, "schedule", "main");
 
 // Local state
 let names = [];
 let currentIndex = 0;
 
-// ✅ Listen for live updates (REAL-TIME SYNC)
+// ✅ REAL-TIME LISTENER (this is what makes it persist + sync)
 onSnapshot(docRef, (snap) => {
   if (snap.exists()) {
     const data = snap.data();
@@ -179,7 +179,7 @@ async function saveData() {
   });
 }
 
-// ✅ UI Actions
+// ✅ UI Actions (must be on window because of onclick)
 window.addName = function() {
   const input = document.getElementById("nameInput");
   if (!input.value) return;
