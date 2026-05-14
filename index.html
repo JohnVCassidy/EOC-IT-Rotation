@@ -20,7 +20,7 @@ header {
   padding: 20px;
   text-align: center;
   font-size: 24px;
-  font-weight: bold; /* ✅ this makes it bold */
+  font-weight: bold;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
@@ -57,7 +57,7 @@ button:hover {
 }
 
 .btn-primary { background: #a7c7e7; }
-.btn-success { background: #ffd6a5; }  /* ✅ Add button now orange */
+.btn-success { background: #ffd6a5; }
 .btn-warning { background: #ffc0cb; }
 .btn-danger { background: #b8f2e6; }
 
@@ -96,7 +96,6 @@ li {
   text-align: center;
 }
 </style>
-
 </head>
 
 <body>
@@ -129,64 +128,86 @@ li {
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ✅ Your Firebase config (already correct)
+const firebaseConfig = {
+  apiKey: "AIzaSyAhEeegT4M7NIqfPriX4aXtVGWYRtRk80g",
+  authDomain: "eoc-it-rotation-4c320.firebaseapp.com",
+  projectId: "eoc-it-rotation-4c320",
+  storageBucket: "eoc-it-rotation-4c320.firebasestorage.app",
+  messagingSenderId: "1098588557484",
+  appId: "1:1098588557484:web:d31d60eceb0dd1fd4e4f09"
+};
+
+// ✅ Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ✅ Shared document (THIS MAKES IT GLOBAL)
+const docRef = doc(db, "schedule", "main");
+
+// Local state
 let names = [];
 let currentIndex = 0;
 
-const API_URL = "https://YOUR-BACKEND-URL/api/schedule";
-
-async function loadData() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+// ✅ Listen for live updates (REAL-TIME SYNC)
+onSnapshot(docRef, (snap) => {
+  if (snap.exists()) {
+    const data = snap.data();
     names = data.names || [];
     currentIndex = data.currentIndex || 0;
-    render();
-  } catch {
-    render();
+  } else {
+    names = [];
+    currentIndex = 0;
   }
-}
+  render();
+});
 
+// ✅ Save to Firebase
 async function saveData() {
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ names, currentIndex })
-    });
-  } catch {}
+  await setDoc(docRef, {
+    names,
+    currentIndex
+  });
 }
 
-function addName() {
+// ✅ UI Actions
+window.addName = function() {
   const input = document.getElementById("nameInput");
   if (!input.value) return;
+
   names.push(input.value);
   input.value = "";
   saveData();
-  render();
-}
+};
 
-function nextTurn() {
+window.nextTurn = function() {
   if (names.length === 0) return;
   currentIndex = (currentIndex + 1) % names.length;
   saveData();
-  render();
-}
+};
 
-function shuffle() {
+window.shuffle = function() {
   names.sort(() => Math.random() - 0.5);
   currentIndex = 0;
   saveData();
-  render();
-}
+};
 
-function reset() {
+window.reset = function() {
   names = [];
   currentIndex = 0;
   saveData();
-  render();
-}
+};
 
+// ✅ Render UI
 function render() {
   const list = document.getElementById("list");
   const currentBox = document.getElementById("currentTurn");
@@ -204,8 +225,6 @@ function render() {
     ? "Current Turn: " + names[currentIndex]
     : "Current Turn: None";
 }
-
-loadData();
 </script>
 
 </body>
