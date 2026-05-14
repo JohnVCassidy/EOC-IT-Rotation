@@ -1,302 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<meta charset="UTF-8">
+<title>Rotating Task Schedule</title>
 
-window.dbSet = set;
-window.dbOnValue = onValue;
-window.rotationRef = ref(db, "rotation");
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #ffe5d9, #ffd6e8, #eaf4ff);
+  background-attachment: fixed;
+  margin: 0;
+  padding: 0;
+  color: #2c3e50;
+}
 
-  const firebaseConfig = {
-  apiKey: "AIzaSyCqMM3ZLcJ8RLY5dq-41mIjbg4vzL6TgQ",
-  authDomain: "eoc-it-rotation.firebaseapp.com",
-  databaseURL: "https://eoc-it-rotation-default-rtdb.firebaseio.com",
-  projectId: "eoc-it-rotation",
-  storageBucket: "eoc-it-rotation.firebasestorage.app",
-  messagingSenderId: "282482598596",
-  appId: "1:282482598596:web:5c3e6f4e91412587ed9f91"
-};
+header {
+  background: #bcd3ea;
+  color: #2c3e50;
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold; /* ✅ this makes it bold */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  window.rotationRef = ref(db, "rotation");
-</script>
-  <meta charset="UTF-8" />
-  <title>EOC - IT Rotating Schedule</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 0;
-      background: #ffffff;
-      color: #111;
-    }
+.container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
 
-    h1 {
-      font-size: 22px;
-      margin: 24px;
-    }
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
 
-    .header {
-      background: #5b4fc4;
-      color: white;
-      padding: 20px 24px;
-      margin: 0 24px;
-      border-radius: 4px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2c3e50;
+}
 
-    .subtitle {
-      font-size: 13px;
-      opacity: 0.9;
-      margin-top: 6px;
-    }
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+}
 
-    .round {
-      background: #463aa8;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-    }
+.btn-primary { background: #a7c7e7; }
+.btn-success { background: #ffd6a5; }  /* ✅ Add button now orange */
+.btn-warning { background: #ffc0cb; }
+.btn-danger { background: #b8f2e6; }
 
-    .controls {
-      margin: 20px 24px;
-    }
+input {
+  padding: 10px;
+  width: 70%;
+  margin-right: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  color: #2c3e50;
+}
 
-    button {
-      padding: 8px 14px;
-      font-size: 13px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 8px;
-    }
+ul {
+  list-style: none;
+  padding: 0;
+}
 
-    .primary { background: #5b4fc4; color: white; }
-    .danger  { background: #e84c6f; color: white; }
-    .link    { background: none; color: #111; text-decoration: underline; }
+li {
+  padding: 10px;
+  background: #f3f7fb;
+  margin: 5px 0;
+  border-radius: 6px;
+}
 
-    .queue {
-      margin: 10px 24px 24px;
-      border-top: 1px solid #5b4fc4;
-    }
+.current {
+  background: #b5ead7;
+  font-weight: bold;
+}
 
-    .queue-title {
-      font-size: 12px;
-      margin: 14px 0;
-      font-weight: 600;
-    }
+.current-box {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f0f8ff;
+  text-align: center;
+}
+</style>
 
-    .person {
-      display: flex;
-      align-items: center;
-      padding: 14px;
-      border-bottom: 1px solid #e6e6f0;
-    }
-
-    .person.active {
-      background: #f0efff;
-      border: 1px solid #5b4fc4;
-      border-radius: 4px;
-    }
-
-    .avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      margin-right: 14px;
-    }
-
-    .actions {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-    }
-
-    .badge {
-      background: #5b4fc4;
-      color: white;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 12px;
-    }
-
-    .history {
-      margin: 24px;
-      font-size: 13px;
-    }
-
-    input {
-      padding: 8px;
-      font-size: 13px;
-      margin-right: 6px;
-    }
-
-    .add-row {
-      margin: 14px 24px;
-    }
-  </style>
 </head>
 
 <body>
 
-<h1>EOC - IT Rotating Schedule — manage turn order for a recurring task</h1>
+<header>
+  🔄 EOC - IT Rotating Schedule
+</header>
 
-<div class="header">
-  <div>
-    <div><strong>EOC - IT Rotating Schedule</strong></div>
-    <div class="subtitle">The person at the top is currently up. Hit "Next turn" to rotate.</div>
+<div class="container">
+
+  <div class="card current-box" id="currentTurn">
+    Current Turn: None
   </div>
-  <div class="round" id="round">Round 1</div>
-</div>
 
-<div class="controls">
-  <button class="primary" onclick="nextTurn()">Next turn ↓</button>
-  <button class="danger" onclick="shuffle()">Shuffle order</button>
-  <button class="link" onclick="resetHistory()">Reset history</button>
-</div>
+  <div class="card">
+    <button class="btn-primary" onclick="nextTurn()">⏭️ Next Turn</button>
+    <button class="btn-warning" onclick="shuffle()">🔀 Shuffle</button>
+    <button class="btn-danger" onclick="reset()">♻️ Reset</button>
+  </div>
 
-<div class="queue">
-  <div class="queue-title">QUEUE</div>
-  <div id="list"></div>
-</div>
+  <div class="card">
+    <input id="nameInput" placeholder="Add a person..." />
+    <button class="btn-success" onclick="addName()">➕ Add</button>
+  </div>
 
-<div class="add-row">
-  <input id="newName" placeholder="Add a person..." />
-  <button class="primary" onclick="addPerson()">Add</button>
-</div>
+  <div class="card">
+    <h3>Queue</h3>
+    <ul id="list"></ul>
+  </div>
 
-<div class="history">
-  <strong>TURN HISTORY</strong>
-  <div id="history">No turns taken yet</div>
 </div>
 
 <script>
-let round = 1;
-let queue = [];
-let history = [];
-function saveState() {
-  window.dbSet(window.rotationRef, {
-    queue,
-    history,
-    round
-  });
+let names = [];
+let currentIndex = 0;
+
+const API_URL = "https://YOUR-BACKEND-URL/api/schedule";
+
+async function loadData() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    names = data.names || [];
+    currentIndex = data.currentIndex || 0;
+    render();
+  } catch {
+    render();
+  }
 }
 
-window.dbOnValue(window.rotationRef, snapshot => {
-  const data = snapshot.val();
-  if (!data) return;
+async function saveData() {
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ names, currentIndex })
+    });
+  } catch {}
+}
 
-  queue = data.queue || [];
-  history = data.history || [];
-  round = data.round || 1;
-
-  updateHistory();
+function addName() {
+  const input = document.getElementById("nameInput");
+  if (!input.value) return;
+  names.push(input.value);
+  input.value = "";
+  saveData();
   render();
-});
-    const data = snapshot.val();
-    if (!data) return;
-
-    queue = data.queue || [];
-    history = data.history || [];
-    round = data.round || 1;
-
-    updateHistory();
-    render();
-  });
-});
-
-const colors = ["#cfd1ff","#aee7ce","#f6c1cf","#ffc66e","#b6d6ff","#f8c5b0"];
-
-function render() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-  queue.forEach((name, i) => {
-    const row = document.createElement("div");
-    row.className = "person" + (i === 0 ? " active" : "");
-    row.innerHTML = `
-      <div class="avatar" style="background:${colors[i % colors.length]}">
-        ${name[0]}
-      </div>
-      <div>${name}</div>
-      <div class="actions">
-        ${i === 0 ? `<span class="badge">Up now</span>` : `<span>${i+1}</span>`}
-        <span onclick="moveUp(${i})">↑</span>
-        <span onclick="moveDown(${i})">↓</span>
-        <span onclick="remove(${i})">×</span>
-      </div>
-    `;
-    list.appendChild(row);
-  });
-  document.getElementById("round").innerText = `Round ${round}`;
 }
 
 function nextTurn() {
-  history.unshift(queue[0]);
-  queue.push(queue.shift());
-
-  if (queue[0] === history[0]) round++;
-
-  saveState();
+  if (names.length === 0) return;
+  currentIndex = (currentIndex + 1) % names.length;
+  saveData();
+  render();
 }
 
 function shuffle() {
-  queue.sort(() => Math.random() - 0.5);
-  saveState();
+  names.sort(() => Math.random() - 0.5);
+  currentIndex = 0;
+  saveData();
+  render();
 }
 
-function resetHistory() {
-  history = [];
-  round = 1;
-  saveState();
+function reset() {
+  names = [];
+  currentIndex = 0;
+  saveData();
+  render();
 }
 
+function render() {
+  const list = document.getElementById("list");
+  const currentBox = document.getElementById("currentTurn");
 
-function addPerson() {
-  const input = document.getElementById("newName");
-  if (!input.value) return;
+  list.innerHTML = "";
 
-  queue.push(input.value);
-  input.value = "";
+  names.forEach((name, index) => {
+    const li = document.createElement("li");
+    li.textContent = name;
+    if (index === currentIndex) li.classList.add("current");
+    list.appendChild(li);
+  });
 
-  saveState();
+  currentBox.textContent = names.length
+    ? "Current Turn: " + names[currentIndex]
+    : "Current Turn: None";
 }
 
-
-function remove(i) {
-  queue.splice(i, 1);
-  saveState()
-}
-
-
-function moveUp(i) {
-  if (i === 0) return;
-  [queue[i-1], queue[i]] = [queue[i], queue[i-1]];
-  saveState();
-}
-
-
-function moveDown(i) {
-  if (i === queue.length - 1) return;
-  [queue[i+1], queue[i]] = [queue[i], queue[i+1]];
-  saveState();
-}
-
-function updateHistory() {
-  document.getElementById("history").innerText =
-    history.join(", ");
-}
-
+loadData();
 </script>
 
 </body>
